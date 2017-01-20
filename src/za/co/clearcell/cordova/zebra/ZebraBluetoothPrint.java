@@ -1,4 +1,4 @@
-package com.github.michael79bxl.zbtprinter;
+package za.co.clearcell.cordova.zebra;
 
 import java.io.IOException;
 
@@ -12,12 +12,12 @@ import com.zebra.android.discovery.*;
 import com.zebra.sdk.comm.*;
 import com.zebra.sdk.printer.*;
 
-public class ZebraBluetoothPrinter extends CordovaPlugin {
+public class ZebraBluetoothPrint extends CordovaPlugin {
 
-    private static final String LOG_TAG = "ZebraBluetoothPrinter";
+    private static final String LOG_TAG = "ZebraBluetoothPrint";
     //String mac = "AC:3F:A4:1D:7A:5C";
 
-    public ZebraBluetoothPrinter() {
+    public ZebraBluetoothPrint() {
     }
 
     @Override
