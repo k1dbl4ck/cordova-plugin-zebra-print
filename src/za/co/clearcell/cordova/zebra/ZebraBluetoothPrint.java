@@ -1,4 +1,4 @@
-package za.co.clearcell.cordova.zebra; 
+package com.github.michael79bxl.zbtprinter;
 
 import java.io.IOException;
 
@@ -8,51 +8,44 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.util.Log;
-//import com.zebra.android.discovery.*;
-//import com.zebra.sdk.comm.*;
-//import com.zebra.sdk.printer.*;
+import com.zebra.android.discovery.*;
+import com.zebra.sdk.comm.*;
+import com.zebra.sdk.printer.*;
 
-import com.dimagi.android.zebraprinttool.action.*; 
+public class ZebraBluetoothPrinter extends CordovaPlugin {
 
-public class ZebraBluetoothPrint extends CordovaPlugin {
-
-    private static final String LOG_TAG = "ZebraBluetoothPrint";
+    private static final String LOG_TAG = "ZebraBluetoothPrinter";
     //String mac = "AC:3F:A4:1D:7A:5C";
 
-    public void ZebraBluetoothPrinter() { }
+    public ZebraBluetoothPrinter() {
+    }
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
         if (action.equals("print")) {
             try {
-                
-
-                String zebraTemplateFilepath = "/sdcard/download/test.zpl";
-
-                Intent i = new Intent("com.dimagi.android.zebraprinttool.action.PrintTemplate");
-
-                i.putExtra("zebra:template_file_path", zebraTemplateFilepath);
-
-                Bundle labelVariableArguments = new Bundle();
-                labelVariableArguments.putString("barcode_data", "1234");
-                labelVariableArguments.putString("text_data", "1234");
-                i.putExtras(labelVariableArguments);
-
-                this.startActivityForResult(i, ZEBRA_CALLOUT);
-
-
+                String mac = args.getString(0);
+                String msg = args.getString(1);
+                sendData(callbackContext, mac, msg);
             } catch (Exception e) {
                 Log.e(LOG_TAG, e.getMessage());
                 e.printStackTrace();
-                return false; 
             }
             return true;
         }
-       
+        if (action.equals("find")) {
+            try {
+                findPrinter(callbackContext);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, e.getMessage());
+                e.printStackTrace();
+            }
+            return true;
+        }
         return false;
     }
-  /*  
+    
     public void findPrinter(final CallbackContext callbackContext) {
       try {
           BluetoothDiscoverer.findPrinters(this.cordova.getActivity().getApplicationContext(), new DiscoveryHandler() {
@@ -87,7 +80,9 @@ public class ZebraBluetoothPrint extends CordovaPlugin {
       }      
     }
 
-    
+    /*
+     * This will send data to be printed by the bluetooth printer
+     */
     void sendData(final CallbackContext callbackContext, final String mac, final String msg) throws IOException {
         new Thread(new Runnable() {
             @Override
@@ -143,8 +138,5 @@ public class ZebraBluetoothPrint extends CordovaPlugin {
         }
         return isOK;
     }
-
-  */ 
-
 }
 

@@ -31,7 +31,7 @@
             </feature>
         </config-file>
 
-         <framework src="src/za/co/clearcell/cordova/zebra/build.gradle" custom="true" type="gradleReference" />
-         <resource-file src="aar/android-zebra-interface-1.1.aar" target="aar/android-zebra-interface-1.1.aar" />
+        <source-file src="libs/ZSDK_ANDROID_API.jar" target-dir="libs"/>
+
     </platform>
 </plugin>
