@@ -2,6 +2,11 @@ package za.co.clearcell.cordova.zebra;
 
 import java.io.IOException;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
@@ -23,6 +28,7 @@ public class ZebraBluetoothPrint extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
+         Log.e(LOG_TAG, action);
         if (action.equals("print")) {
             try {
                 String mac = args.getString(0);
@@ -31,54 +37,68 @@ public class ZebraBluetoothPrint extends CordovaPlugin {
             } catch (Exception e) {
                 Log.e(LOG_TAG, e.getMessage());
                 e.printStackTrace();
+                return false; 
             }
             return true;
         }
-        if (action.equals("find")) {
+        if (action.equals("list")) {
             try {
-                findPrinter(callbackContext);
+                listPrinters(callbackContext);
             } catch (Exception e) {
                 Log.e(LOG_TAG, e.getMessage());
                 e.printStackTrace();
+                return false; 
             }
             return true;
         }
         return false;
     }
-    
-    public void findPrinter(final CallbackContext callbackContext) {
-      try {
-          BluetoothDiscoverer.findPrinters(this.cordova.getActivity().getApplicationContext(), new DiscoveryHandler() {
 
-              public void foundPrinter(DiscoveredPrinter printer) {
-                  if(printer instanceof DiscoveredPrinterBluetooth) {
-                     JSONObject printerObj = new JSONObject();
-                     try {
-                       printerObj.put("address", printer.address);
-                       printerObj.put("friendlyName", ((DiscoveredPrinterBluetooth) printer).friendlyName);
-                       callbackContext.success(printerObj);
-                     } catch (JSONException e) {
-                     }
-                  } else {              
-                    String macAddress = printer.address;
-                    //I found a printer! I can use the properties of a Discovered printer (address) to make a Bluetooth Connection
-                    callbackContext.success(macAddress);
-                  }
-              }
 
-              public void discoveryFinished() {
-                  //Discovery is done
-              }
+    //This will return the array list of paired bluetooth printers
+	void listPrinters(CallbackContext callbackContext) {
+        Log.e(LOG_TAG, "listPrinters");
 
-              public void discoveryError(String message) {
-                  //Error during discovery
-                  callbackContext.error(message);
-              }
-          });
-      } catch (Exception e) {
-          e.printStackTrace();
-      }      
-    }
+		BluetoothAdapter mBluetoothAdapter = null;
+		String errMsg = null;
+		try {
+			mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+			if (mBluetoothAdapter == null) {
+				errMsg = "No bluetooth adapter available";
+				Log.e(LOG_TAG, errMsg);
+				callbackContext.error(errMsg);
+				return;
+			}
+			if (!mBluetoothAdapter.isEnabled()) {
+				Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+				this.cordova.getActivity().startActivityForResult(enableBluetooth, 0);
+			}
+			Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+			if (pairedDevices.size() > 0) {
+				JSONArray json = new JSONArray();
+				for (BluetoothDevice device : pairedDevices) {
+					/*
+					Hashtable map = new Hashtable();
+					map.put("type", device.getType());
+					map.put("address", device.getAddress());
+					map.put("name", device.getName());
+					JSONObject jObj = new JSONObject(map);
+					*/
+					json.put(device.getName());
+				}
+				callbackContext.success(json);
+			} else {
+				callbackContext.error("No Bluetooth Device Found");
+			}
+			//Log.d(LOG_TAG, "Bluetooth Device Found: " + mmDevice.getName());
+		} catch (Exception e) {
+			errMsg = e.getMessage();
+			Log.e(LOG_TAG, errMsg);
+			e.printStackTrace();
+			callbackContext.error(errMsg);
+		}
+	}
+   
 
     /*
      * This will send data to be printed by the bluetooth printer
